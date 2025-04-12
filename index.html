@@ -42,7 +42,7 @@
     .message {
       text-align: center;
       font-weight: bold;
-      color: green;
+      margin-top: 1rem;
     }
   </style>
 </head>
@@ -65,41 +65,52 @@
   </div>
 
   <script>
-    const scriptURL = "https://script.google.com/macros/s/AKfycbz63DhH5mTD0hv3OFwbz7GPJUVGS3U-oy9WysAFwh1voocvLMyjGQABOVQ8I2rh6HAz/exec";
+    const scriptURL = "https://api.sheety.co/1177c6de3fb3892f8f393924d349096e/expenseTracker/tracker"; // ← Replace this
 
     window.onload = () => {
-      // Autofill current month
       const now = new Date();
       document.getElementById("month").value = now.toISOString().slice(0, 7);
     };
 
-    document.getElementById("form").addEventListener("submit", (e) => {
+    document.getElementById("form").addEventListener("submit", async (e) => {
       e.preventDefault();
 
       const msg = document.getElementById("msg");
+      msg.style.color = "black";
       msg.textContent = "Saving...";
 
-      const data = {
-        month: document.getElementById("month").value,
-        category: document.getElementById("category").value,
-        amount: parseFloat(document.getElementById("amount").value)
+      const month = document.getElementById("month").value;
+      const category = document.getElementById("category").value;
+      const amount = parseFloat(document.getElementById("amount").value);
+
+      const payload = {
+        sheet1: {
+          date: month,
+          category: category,
+          amount: amount
+        }
       };
 
-      fetch(scriptURL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-      })
-      .then((res) => res.text())
-      .then((response) => {
-        msg.textContent = response.includes("OK") ? "✅ Expense saved!" : "❌ Something went wrong.";
-        document.getElementById("form").reset();
-        // Autofill again after reset
-        document.getElementById("month").value = new Date().toISOString().slice(0, 7);
-      })
-      .catch((err) => {
-        msg.textContent = "❌ Failed to save: " + err.message;
-      });
+      try {
+        const res = await fetch(scriptURL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          msg.style.color = "green";
+          msg.textContent = "✅ Expense saved!";
+          e.target.reset();
+          document.getElementById("month").value = new Date().toISOString().slice(0, 7);
+        } else {
+          msg.style.color = "red";
+          msg.textContent = "❌ Failed to save.";
+        }
+      } catch (err) {
+        msg.style.color = "red";
+        msg.textContent = "❌ Error: " + err.message;
+      }
     });
   </script>
 </body>
