@@ -21,6 +21,7 @@
       min-height: 100vh;
       width: 100%;
       overflow-x: hidden;
+      overscroll-behavior: contain; /* Prevent scrolling beyond the top */
     }
     .container {
       width: 90%;
@@ -107,7 +108,6 @@
     </form>
 
     <h3>Total This Month: <span id="total">€0</span></h3>
-    <button id="refresh-btn" onclick="refreshApp()">🔄 Refresh</button>
     <button id="toggle-btn" onclick="toggleList()">📋 View Expenses</button>
     <div class="expense-list" id="expense-list"></div>
   </div>
@@ -130,7 +130,17 @@
 
       const month = document.getElementById("month").value;
       const category = document.getElementById("category").value;
-      const amount = parseFloat(document.getElementById("amount").value);
+
+      // Ensure the amount uses dot as decimal separator
+      let amount = document.getElementById("amount").value;
+      amount = amount.replace(',', '.'); // Replace comma with dot
+      amount = parseFloat(amount); // Convert to float
+
+      if (isNaN(amount)) {
+        msg.style.color = "red";
+        msg.textContent = "❌ Invalid amount value.";
+        return;
+      }
 
       const payload = {
         tracker: {
@@ -232,9 +242,24 @@
       }
     }
 
+    // Detect pull-to-refresh gesture
+    let startTouchY = 0;
+
+    document.addEventListener("touchstart", (e) => {
+      startTouchY = e.touches[0].clientY; // Get starting touch position
+    });
+
+    document.addEventListener("touchmove", (e) => {
+      const currentTouchY = e.touches[0].clientY;
+
+      // Detect pull-down motion (move down after starting touch)
+      if (currentTouchY - startTouchY > 100) {
+        refreshApp(); // Trigger refresh when pulled down by 100px
+      }
+    });
+
     function refreshApp() {
-      // Refresh the page like a regular Safari refresh
-      window.location.reload(true); // Forces the browser to reload the app and bypass cache
+      window.location.reload(true); // Hard reload to bypass cache
     }
   </script>
 </body>
