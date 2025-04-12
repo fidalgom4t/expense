@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>Expense Tracker</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: sans-serif;
+        background: #f4f4f4;
+      }
+      .container {
+        max-width: 500px;
+        margin: auto;
+        padding: 2rem;
+      }
+      input, select, button {
+        width: 100%;
+        margin-bottom: 1rem;
+        padding: 1rem;
+        font-size: 1.2rem;
+      }
+      button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Expense Tracker</h2>
+      <form id="form">
+        <input type="month" id="month" required />
+        <select id="category">
+          <option>Food</option>
+          <option>Transport</option>
+          <option>Utilities</option>
+          <option>Entertainment</option>
+        </select>
+        <input type="number" id="amount" placeholder="Amount (€)" required />
+        <button type="submit">Add</button>
+      </form>
+    </div>
+
+    <script>
+      document.getElementById('form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        alert('This is working — we’ll connect it to storage next!');
+      });
+    </script>
+  </body>
+</html>
