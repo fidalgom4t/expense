@@ -96,8 +96,8 @@
       <input type="month" id="month" required />
       <select id="category">
         <option>Food</option>
-        <option>Fixed</option>
         <option>Transport</option>
+        <option>Utilities</option>
         <option>Entertainment</option>
         <option>Other</option>
       </select>
@@ -150,7 +150,8 @@
           msg.textContent = "✅ Expense saved!";
           e.target.reset();
           document.getElementById("month").value = new Date().toISOString().slice(0, 7);
-          loadExpenses();
+          loadExpenses(); // This loads the expenses
+          updateMonthlyTotal(); // This ensures total is updated
         } else {
           msg.style.color = "red";
           msg.textContent = "❌ Failed to save.";
@@ -188,7 +189,8 @@
               const confirmed = confirm("Delete this expense?");
               if (!confirmed) return;
               await fetch(`${scriptURL}/${e.id}`, { method: "DELETE" });
-              loadExpenses();
+              loadExpenses(); // This loads the expenses after deletion
+              updateMonthlyTotal(); // This ensures total is updated after deletion
             };
 
             li.appendChild(delBtn);
@@ -198,6 +200,24 @@
         const li = document.createElement("li");
         li.textContent = "Failed to load expenses.";
         ul.appendChild(li);
+      }
+    }
+
+    async function updateMonthlyTotal() {
+      try {
+        const now = new Date();
+        const currentMonth = now.toISOString().slice(0, 7);
+        const res = await fetch(scriptURL);
+        const data = await res.json();
+        const expenses = data.tracker;
+
+        const total = expenses
+          .filter(e => e.date === currentMonth)
+          .reduce((sum, e) => sum + Number(e.amount || 0), 0);
+
+        document.getElementById("total").textContent = `€${total.toFixed(2)}`;
+      } catch (err) {
+        console.error("Error updating total:", err);
       }
     }
 
