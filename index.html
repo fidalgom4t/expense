@@ -48,6 +48,10 @@
       border: none;
       cursor: pointer;
     }
+    #toggle-btn {
+      margin-top: 1rem;
+      background: #6c757d;
+    }
     .message {
       text-align: center;
       font-weight: bold;
@@ -55,7 +59,7 @@
     }
     h3 {
       text-align: center;
-      margin-top: 2rem;
+      margin-top: 1.5rem;
     }
     .expense-list {
       display: none;
@@ -98,7 +102,8 @@
       <button type="submit">Add Expense</button>
       <div class="message" id="msg"></div>
     </form>
-    <button onclick="toggleList()">📋 View Expenses</button>
+
+    <button id="toggle-btn" onclick="toggleList()">📋 View Expenses</button>
     <h3>Total This Month: <span id="total">€0</span></h3>
     <div class="expense-list" id="expense-list"></div>
   </div>
