@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <title>Expense Tracker</title>
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#113045">
+  <meta name="theme-color" content="#007bff">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <link rel="apple-touch-icon" href="icon.png">
@@ -46,6 +46,7 @@
       color: white;
       font-weight: bold;
       border: none;
+      cursor: pointer;
     }
     .message {
       text-align: center;
@@ -56,6 +57,29 @@
       text-align: center;
       margin-top: 2rem;
     }
+    .expense-list {
+      display: none;
+      margin-top: 2rem;
+    }
+    .expense-list ul {
+      list-style: none;
+      padding: 0;
+    }
+    .expense-list li {
+      padding: 0.5rem;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .expense-list button.delete {
+      background: none;
+      color: red;
+      font-size: 1.4rem;
+      line-height: 1;
+      border: none;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -65,8 +89,7 @@
       <input type="month" id="month" required />
       <select id="category">
         <option>Food</option>
-        <option>Fixed</option>
-        <option>Not Fixed</option>
+        <option>Transport</option>
         <option>Utilities</option>
         <option>Entertainment</option>
         <option>Other</option>
@@ -75,11 +98,13 @@
       <button type="submit">Add Expense</button>
       <div class="message" id="msg"></div>
     </form>
+    <button onclick="toggleList()">📋 View Expenses</button>
     <h3>Total This Month: <span id="total">€0</span></h3>
+    <div class="expense-list" id="expense-list"></div>
   </div>
 
   <script>
-    const scriptURL = "https://api.sheety.co/1177c6de3fb3892f8f393924d349096e/expenseTracker/tracker";
+    let scriptURL = localStorage.getItem("sheetyURL") || "https://api.sheety.co/1177c6de3fb3892f8f393924d349096e/expenseTracker/tracker";
 
     window.onload = () => {
       const now = new Date();
@@ -119,6 +144,7 @@
           e.target.reset();
           document.getElementById("month").value = new Date().toISOString().slice(0, 7);
           updateMonthlyTotal();
+          loadExpenses();
         } else {
           msg.style.color = "red";
           msg.textContent = "❌ Failed to save.";
@@ -144,6 +170,52 @@
         document.getElementById("total").textContent = `€${total.toFixed(2)}`;
       } catch (err) {
         console.error("Error updating total:", err);
+      }
+    }
+
+    async function loadExpenses() {
+      const list = document.getElementById("expense-list");
+      list.innerHTML = "<ul></ul>";
+      const ul = list.querySelector("ul");
+
+      const now = new Date();
+      const currentMonth = now.toISOString().slice(0, 7);
+
+      try {
+        const res = await fetch(scriptURL);
+        const data = await res.json();
+        const expenses = data.tracker;
+
+        expenses
+          .filter(e => e.date === currentMonth)
+          .forEach(e => {
+            const li = document.createElement("li");
+            li.textContent = `${e.category}: €${e.amount}`;
+
+            const delBtn = document.createElement("button");
+            delBtn.className = "delete";
+            delBtn.textContent = "❌"; // red cross emoji
+            delBtn.onclick = async () => {
+              const confirmed = confirm("Delete this expense?");
+              if (!confirmed) return;
+              await fetch(`${scriptURL}/${e.id}`, { method: "DELETE" });
+              updateMonthlyTotal();
+              loadExpenses();
+            };
+
+            li.appendChild(delBtn);
+            ul.appendChild(li);
+          });
+      } catch (err) {
+        ul.innerHTML = "<li>Failed to load expenses.</li>";
+      }
+    }
+
+    function toggleList() {
+      const list = document.getElementById("expense-list");
+      list.style.display = list.style.display === "none" ? "block" : "none";
+      if (list.style.display === "block") {
+        loadExpenses();
       }
     }
 
