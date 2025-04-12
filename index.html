@@ -52,6 +52,10 @@
       font-weight: bold;
       margin-top: 1rem;
     }
+    h3 {
+      text-align: center;
+      margin-top: 2rem;
+    }
   </style>
 </head>
 <body>
@@ -61,7 +65,8 @@
       <input type="month" id="month" required />
       <select id="category">
         <option>Food</option>
-        <option>Transport</option>
+        <option>Fixed</option>
+        <option>Not Fixed</option>
         <option>Utilities</option>
         <option>Entertainment</option>
         <option>Other</option>
@@ -70,6 +75,7 @@
       <button type="submit">Add Expense</button>
       <div class="message" id="msg"></div>
     </form>
+    <h3>Total This Month: <span id="total">€0</span></h3>
   </div>
 
   <script>
@@ -78,6 +84,7 @@
     window.onload = () => {
       const now = new Date();
       document.getElementById("month").value = now.toISOString().slice(0, 7);
+      updateMonthlyTotal();
     };
 
     document.getElementById("form").addEventListener("submit", async (e) => {
@@ -111,6 +118,7 @@
           msg.textContent = "✅ Expense saved!";
           e.target.reset();
           document.getElementById("month").value = new Date().toISOString().slice(0, 7);
+          updateMonthlyTotal();
         } else {
           msg.style.color = "red";
           msg.textContent = "❌ Failed to save.";
@@ -120,6 +128,24 @@
         msg.textContent = "❌ Error: " + err.message;
       }
     });
+
+    async function updateMonthlyTotal() {
+      try {
+        const now = new Date();
+        const currentMonth = now.toISOString().slice(0, 7);
+        const res = await fetch(scriptURL);
+        const data = await res.json();
+        const expenses = data.tracker;
+
+        const total = expenses
+          .filter(e => e.date === currentMonth)
+          .reduce((sum, e) => sum + Number(e.amount || 0), 0);
+
+        document.getElementById("total").textContent = `€${total.toFixed(2)}`;
+      } catch (err) {
+        console.error("Error updating total:", err);
+      }
+    }
 
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("service-worker.js")
