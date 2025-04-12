@@ -1,55 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <title>Expense Tracker</title>
-    <style>
-      body {
-        margin: 0;
-        padding: 0;
-        font-family: sans-serif;
-        background: #f4f4f4;
-      }
-      .container {
-        max-width: 500px;
-        margin: auto;
-        padding: 2rem;
-      }
-      input, select, button {
-        width: 100%;
-        margin-bottom: 1rem;
-        padding: 1rem;
-        font-size: 1.2rem;
-      }
-      button {
-        background-color: #007bff;
-        color: white;
-        border: none;
-        font-weight: bold;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <h2>Expense Tracker</h2>
-      <form id="form">
-        <input type="month" id="month" required />
-        <select id="category">
-          <option>Food</option>
-          <option>Transport</option>
-          <option>Utilities</option>
-          <option>Entertainment</option>
-        </select>
-        <input type="number" id="amount" placeholder="Amount (€)" required />
-        <button type="submit">Add</button>
-      </form>
-    </div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>Expense Tracker</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f5f8fa;
+      margin: 0;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 480px;
+      margin: auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.05);
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      font-size: 1.1rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-sizing: border-box;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+    }
+    .message {
+      text-align: center;
+      font-weight: bold;
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Expense Tracker</h2>
+    <form id="form">
+      <input type="month" id="month" required />
+      <select id="category">
+        <option>Food</option>
+        <option>Transport</option>
+        <option>Utilities</option>
+        <option>Entertainment</option>
+        <option>Other</option>
+      </select>
+      <input type="number" id="amount" placeholder="Amount (€)" required />
+      <button type="submit">Add Expense</button>
+      <div class="message" id="msg"></div>
+    </form>
+  </div>
 
-    <script>
-      document.getElementById('form').addEventListener('submit', (e) => {
-        e.preventDefault();
-        alert('This is working — we’ll connect it to storage next!');
+  <script>
+    const scriptURL = "https://script.google.com/macros/s/AKfycbz2FByguNHC_3IAB60w3EVrgv38A7nWDpqxYgYKoz13uWsbyKQxOuwKdovnuHfnMzNq/exec";
+
+    window.onload = () => {
+      // Autofill current month
+      const now = new Date();
+      document.getElementById("month").value = now.toISOString().slice(0, 7);
+    };
+
+    document.getElementById("form").addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      const msg = document.getElementById("msg");
+      msg.textContent = "Saving...";
+
+      const data = {
+        month: document.getElementById("month").value,
+        category: document.getElementById("category").value,
+        amount: parseFloat(document.getElementById("amount").value)
+      };
+
+      fetch(scriptURL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      })
+      .then((res) => res.text())
+      .then((response) => {
+        msg.textContent = response.includes("OK") ? "✅ Expense saved!" : "❌ Something went wrong.";
+        document.getElementById("form").reset();
+        // Autofill again after reset
+        document.getElementById("month").value = new Date().toISOString().slice(0, 7);
+      })
+      .catch((err) => {
+        msg.textContent = "❌ Failed to save: " + err.message;
       });
-    </script>
-  </body>
+    });
+  </script>
+</body>
 </html>
