@@ -115,6 +115,7 @@
       const now = new Date();
       document.getElementById("month").value = now.toISOString().slice(0, 7);
       updateMonthlyTotal();
+      loadExpenses();
     };
 
     document.getElementById("form").addEventListener("submit", async (e) => {
@@ -180,8 +181,9 @@
 
     async function loadExpenses() {
       const list = document.getElementById("expense-list");
-      list.innerHTML = "<ul></ul>";
-      const ul = list.querySelector("ul");
+      list.innerHTML = "";
+      const ul = document.createElement("ul");
+      list.appendChild(ul);
 
       const now = new Date();
       const currentMonth = now.toISOString().slice(0, 7);
@@ -199,7 +201,7 @@
 
             const delBtn = document.createElement("button");
             delBtn.className = "delete";
-            delBtn.textContent = "❌"; // red cross emoji
+            delBtn.textContent = "❌";
             delBtn.onclick = async () => {
               const confirmed = confirm("Delete this expense?");
               if (!confirmed) return;
@@ -212,13 +214,15 @@
             ul.appendChild(li);
           });
       } catch (err) {
-        ul.innerHTML = "<li>Failed to load expenses.</li>";
+        const li = document.createElement("li");
+        li.textContent = "Failed to load expenses.";
+        ul.appendChild(li);
       }
     }
 
     function toggleList() {
       const list = document.getElementById("expense-list");
-      list.style.display = list.style.display === "none" ? "block" : "none";
+      list.style.display = list.style.display === "none" || list.style.display === "" ? "block" : "none";
       if (list.style.display === "block") {
         loadExpenses();
       }
