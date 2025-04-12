@@ -107,6 +107,7 @@
     </form>
 
     <h3>Total This Month: <span id="total">€0</span></h3>
+    <button id="refresh-btn" onclick="refreshApp()">🔄 Refresh</button>
     <button id="toggle-btn" onclick="toggleList()">📋 View Expenses</button>
     <div class="expense-list" id="expense-list"></div>
   </div>
@@ -118,6 +119,7 @@
       const now = new Date();
       document.getElementById("month").value = now.toISOString().slice(0, 7);
       loadExpenses();
+      updateMonthlyTotal(); // Ensure total is updated when the page loads
     };
 
     document.getElementById("form").addEventListener("submit", async (e) => {
@@ -151,7 +153,7 @@
           e.target.reset();
           document.getElementById("month").value = new Date().toISOString().slice(0, 7);
           loadExpenses(); // This loads the expenses
-          updateMonthlyTotal(); // This ensures total is updated
+          updateMonthlyTotal(); // This ensures total is updated immediately
         } else {
           msg.style.color = "red";
           msg.textContent = "❌ Failed to save.";
@@ -190,7 +192,7 @@
               if (!confirmed) return;
               await fetch(`${scriptURL}/${e.id}`, { method: "DELETE" });
               loadExpenses(); // This loads the expenses after deletion
-              updateMonthlyTotal(); // This ensures total is updated after deletion
+              updateMonthlyTotal(); // This ensures total is updated immediately after deletion
             };
 
             li.appendChild(delBtn);
@@ -228,6 +230,11 @@
       if (isHidden) {
         loadExpenses();
       }
+    }
+
+    function refreshApp() {
+      // Refresh the page like a regular Safari refresh
+      window.location.reload(true); // Forces the browser to reload the app and bypass cache
     }
   </script>
 </body>
